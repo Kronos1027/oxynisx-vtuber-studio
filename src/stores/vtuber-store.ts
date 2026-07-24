@@ -57,6 +57,7 @@ export interface VTuberSettings {
   // Window
   alwaysOnTop: boolean
   clickThrough: boolean
+  decorations: boolean
 
   // Theme
   theme: 'dark' | 'light'
@@ -116,6 +117,7 @@ const DEFAULT_SETTINGS: VTuberSettings = {
 
   alwaysOnTop: false,
   clickThrough: false,
+  decorations: true,
 
   theme: 'dark',
   panelCollapsed: false,

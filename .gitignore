@@ -41,5 +41,9 @@ next-env.d.ts
 prisma/dev.db
 prisma/*.db-journal
 
+# tauri
+src-tauri/target/
+src-tauri/gen/
+
 # z-ai scripts
 .zscripts/

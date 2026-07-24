@@ -1,14 +1,53 @@
 # 🎭 OXYNISX VTuber Studio
 
-> A complete web-based VTuber studio featuring **Ohto Ai** (red hoodie) as the avatar,
-> with Live2D rendering, microphone lip-sync, mouse tracking, and BongoCat-style
-> keyboard overlay.
+> A complete **VTuber studio** featuring **Ohto Ai** (red hoodie) as the avatar,
+> with Live2D rendering, microphone lip-sync, mouse tracking, BongoCat-style
+> keyboard overlay, and a **native Windows desktop app** (.exe) via Tauri.
 
-![OXYNISX VTuber Studio](https://raw.githubusercontent.com/Kronos1027/oxynisx-vtuber-studio/main/docs/screenshot.png)
+![OXYNISX VTuber Studio](docs/screenshot.png)
+
+---
+
+## 🚀 Quick Start
+
+### Option A: Download the Windows installer (easiest)
+
+👉 https://github.com/Kronos1027/oxynisx-vtuber-studio/releases
+
+Download `OXYNISX-VTuber_1.0.0_x64-setup.exe` and run it.
+
+### Option B: Compile the .exe yourself
+
+See **[BUILD-WINDOWS.md](BUILD-WINDOWS.md)** for detailed instructions.
+
+Quick version (on Windows):
+```powershell
+git clone https://github.com/Kronos1027/oxynisx-vtuber-studio.git
+cd oxynisx-vtuber-studio
+bun install
+bun run tauri:build
+```
+
+The `.exe` installer will be in `src-tauri/target/release/bundle/nsis/`.
+
+### Option C: Run as web app (for development/testing)
+
+```bash
+bun install
+bun run dev
+```
+Open `http://localhost:3000` in your browser.
 
 ---
 
 ## ✨ Features
+
+### 🖥️ Desktop App (Tauri)
+- **Native Windows .exe** — no browser needed
+- **Transparent always-on-top window** — avatar floats over your games/streams
+- **Click-through mode** — mouse passes through the avatar
+- **Global keyboard shortcuts** — Ctrl+1..5 work even when other apps are focused
+- **Window state persistence** — remembers position/size between sessions
 
 ### 🎤 Lip-Sync (Microphone)
 - Real-time microphone capture via Web Audio API
@@ -24,7 +63,7 @@
 
 ### 😊 Expressions
 - 5 facial expressions: Happy, Surprised, Angry, Sad, Neutral
-- Hotkeys: `Ctrl+1` through `Ctrl+5`
+- Hotkeys: `Ctrl+1` through `Ctrl+5` (global in desktop mode)
 - Toggle behavior (press again to clear)
 
 ### ⌨️ BongoCat Keyboard Overlay
@@ -40,63 +79,9 @@
 - Collapsible control panel
 
 ### 🎬 Streaming Ready
-- Transparent background for OBS Window Capture
+- Transparent window for OBS Window Capture
 - Chroma key compatible
-- Clean stage area separate from controls
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+ or Bun
-- Modern browser with WebGL support
-
-### Installation
-
-```bash
-# Clone the repo
-git clone https://github.com/Kronos1027/oxynisx-vtuber-studio.git
-cd oxynisx-vtuber-studio
-
-# Install dependencies
-bun install
-# or
-npm install
-
-# Run the dev server
-bun run dev
-# or
-npm run dev
-```
-
-Open `http://localhost:3000` in your browser.
-
-### First Time Setup
-
-1. **Click anywhere** on the page to grant microphone permission
-2. Open the **Microfone & Lip-sync** section in the control panel
-3. Select your microphone device
-4. Adjust sensitivity until the volume meter responds to your voice
-5. (Optional) Enable **Teclado Overlay** for BongoCat-style keyboard visualization
-6. (Optional) Enable **Fundo transparente** for OBS streaming
-
----
-
-## 🎥 Using with OBS
-
-### Method 1: Window Capture (recommended)
-1. In OBS, add a **Window Capture** source
-2. Select your browser window running OXYNISX VTuber Studio
-3. Enable **Fundo transparente** in the app
-4. In OBS, right-click the source → **Filters** → add **Chroma Key**
-5. Set the chroma key color to **black** (or match your background)
-
-### Method 2: Browser Source
-1. In OBS, add a **Browser** source
-2. Set URL to `http://localhost:3000`
-3. Set width/height to match your scene
-4. Enable **Fundo transparente** in the app
+- Always-on-top keeps avatar visible during gameplay
 
 ---
 
@@ -110,37 +95,66 @@ Open `http://localhost:3000` in your browser.
 | `Ctrl+4` | Expression: Sad |
 | `Ctrl+5` | Expression: Neutral |
 | Mouse move | Head + eye tracking |
+| 📌 button | Toggle always-on-top (desktop mode) |
+| 🖱️ button | Toggle click-through (desktop mode) |
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-src/
+src/                              # Frontend (Next.js + React)
 ├── app/
-│   ├── layout.tsx          # Root layout (loads Live2D Cubism Core)
-│   └── page.tsx            # Main VTuber stage + control panel
+│   ├── layout.tsx                # Root layout (loads Live2D Cubism Core)
+│   └── page.tsx                  # Main VTuber stage + control panel
 ├── components/
 │   └── vtuber/
-│       ├── live2d-stage.tsx     # PIXI canvas + model rendering
-│       ├── control-panel.tsx    # Settings sidebar
-│       ├── mouth-overlay.tsx    # SVG lip-sync mouth
-│       └── keyboard-overlay.tsx # BongoCat-style keyboard
+│       ├── live2d-stage.tsx      # PIXI canvas + model rendering
+│       ├── control-panel.tsx     # Settings sidebar
+│       ├── mouth-overlay.tsx     # SVG lip-sync mouth
+│       └── keyboard-overlay.tsx  # BongoCat-style keyboard
 ├── hooks/
-│   ├── use-live2d.ts       # Live2D model management
-│   ├── use-microphone.ts   # Web Audio API mic capture
-│   └── use-keyboard.ts     # Keyboard event capture
+│   ├── use-live2d.ts             # Live2D model management
+│   ├── use-microphone.ts         # Web Audio API mic capture
+│   ├── use-keyboard.ts           # Keyboard event capture
+│   └── use-tauri.ts              # Tauri desktop integration
 └── stores/
-    └── vtuber-store.ts     # Zustand global state
+    └── vtuber-store.ts           # Zustand global state
+
+src-tauri/                        # Backend (Rust + Tauri)
+├── src/lib.rs                    # Window commands + global shortcuts
+├── Cargo.toml                    # Rust dependencies
+├── tauri.conf.json               # Window config (transparent, no decorations)
+└── capabilities/default.json     # Permissions
+
+public/
+├── models/otho-ai/               # Live2D model files
+└── live2dcubismcore.min.js       # Live2D Cubism 4 runtime
 ```
 
 ### Technology Stack
-- **Framework**: Next.js 16 with App Router
+- **Desktop**: Tauri v2 (Rust backend + WebView2 frontend)
+- **Framework**: Next.js 16 with App Router (static export)
 - **Live2D**: pixi-live2d-display + Live2D Cubism 4 Core
 - **Rendering**: PIXI.js v6
 - **Audio**: Web Audio API (AnalyserNode)
 - **State**: Zustand with localStorage persistence
 - **UI**: shadcn/ui + Tailwind CSS
+
+---
+
+## 🎥 Using with OBS
+
+### Method 1: Window Capture (recommended)
+1. Start the OXYNISX VTuber Studio app
+2. In OBS, add a **Window Capture** source
+3. Select the "OXYNISX VTuber Studio" window
+4. The transparent window background will show through automatically
+
+### Method 2: Always-on-top overlay
+1. Click the 📌 button in the app to enable always-on-top
+2. The avatar floats over ALL windows (games, browsers, etc.)
+3. In OBS, use **Display Capture** or **Window Capture** on the game
 
 ---
 
@@ -162,9 +176,8 @@ The model files are in `public/models/otho-ai/`.
 - The base doro model doesn't have a `ParamMouthOpen` parameter, so lip-sync
   uses an SVG mouth overlay positioned over the face rather than a true
   Live2D mouth deformation.
-- Keyboard capture only works when the browser window has focus. For
-  global keyboard capture (even when other apps are focused), you'd need
-  a desktop app (Tauri/Electron).
+- In browser mode (not desktop), keyboard capture only works when the browser
+  window has focus. Use the desktop app for global shortcuts.
 - Microphone requires user interaction to start (browser autoplay policy).
 
 ---
